@@ -1,0 +1,320 @@
+﻿<html>
+<head>
+<style>
+			
+</style>
+<script>
+				/*
+				założenia:
+				- cyfry większe od 0 to elementy węża
+				- "-1" wylosowany element do zebrania
+				- "-2" ściany
+
+				1. wygeneruj:
+				- tablice NxN np 10x10	check
+				- tabelę/divy/spany 	check
+				2. Uzupełnij tablicę zerami	check
+				3. Utwórz funkcję prezentującą wartość z tablicy w odpowienim elementcie tabeli np:
+				tablica[0][0]=1 to w elemencie o id odpowiadającym tej pozycji (np. i_0_0) pojawi się ta
+				wartość (odpowiednik mojej funkcji render z sapera)	check
+				4. Wstaw "gdzieś" np. w środku tablicy "1" (początek węża)	check
+				5. Dodaj obsługe klawiszy:
+				- klawisz kierunku:
+					a) zwiększam w tablicy wszystkie wartości >0 o 1	check
+					b) wstawiam w odpowiednim miejsu tablicy wartość "1"	check
+					c) zeruję w tablicy wszystkie wartości większe od długości węża	check
+				6) wstawiam w tablicy "-2" na brzegach - ściany check
+				7) Losuję element do zebrania (sprawdzam czy nie w miejscu gdzie jest wąż i ściana)	check
+				8) umożliwiam zebranie wylosowanego elementu (przyrost długości).	check
+				9) dodaje setInterval do automatycznego przemieszczania węża	check
+				*/
+	var start=false;
+	var speed=60;
+	var size=40;
+	var width;
+	var length = 3;
+	var poczx;
+	var poczy;
+	var direction;
+	var tab = new Array();
+	var keys = {
+            65 : 'left',
+			37 : 'left',
+            38 : 'up',
+			87 : 'up',
+            68 : 'right',
+			39 : 'right',
+            83 : 'down',
+			40 : 'down'
+            };
+	
+	function zero(){
+		for(var i=1;i<size-1;i++){
+			for(var j=1;j<size-1;j++){
+				tab[i][j]=0;
+			}
+			for(var k=0;k<size;k++){
+			tab[k][0]=-2;
+			tab[0][k]=-2;
+			tab[(size-1)-k][size-1]=-2;
+			tab[size-1][(size-1)-k]=-2;
+			}
+		}
+	}
+	
+	function onLoad(){
+		if(window.innerHeight-60>window.innerWidth-20){
+			width=window.innerWidth-20;
+		}else{
+			width=window.innerHeight-60;
+		}
+		for(var i=0;i<size;i++){
+			tab[i] = new Array();
+			for(var j=0;j<size;j++){
+				tab[i][j]=0;
+			}
+		}
+		zero();
+		poczx = Math.floor((Math.random()* (size-2))+1);
+		poczy = Math.floor((Math.random()* (size-2))+1);
+		tab[poczy][poczx] = 1;
+		make(size);
+		draw()
+	}
+		
+	function make(wk){
+		var main = document.createElement("div");
+		document.body.appendChild(main);
+		main.id="plansza";
+		main.style.width = width + "px";
+		main.style.height = width + "px";
+		main.style.position = "absolute";
+		//main.style.display="table";
+		//main.style.overflow="hidden";
+		for (var i = 0; i < wk; i++) {
+			for (var j = 0; j < wk; j++) {
+				var small = document.createElement("div");
+				main.appendChild(small);
+				small.id="d_"+i+"_"+j;
+				small.style.width = width / wk + "px";
+				small.style.height = width / wk + "px";
+				small.style.position = "absolute";
+				small.style.left = j * width / wk + "px";
+				small.style.top = 20 + i * width / wk + "px";
+				//small.style.lineHeight = (width / wk) + "px";
+				//small.style.lineHeight = width / wk + "px";
+				//small.style.textAlign ="center";
+				//small.style.fontFamily ="Courier";
+				//small.style.border = "solid";
+				small.style.borderWidth = "0px";
+				//small.style.borderColor = "#000000";
+				//small.style.background = "#DDDDDD";
+			}
+		}
+		
+		//setInterval(function(){goForth(direction);},500);
+    }
+
+	function loss(){
+		var a = Math.floor((Math.random()* (size-2))+1);
+		var b = Math.floor((Math.random()* (size-2))+1);
+		while(tab[a][b]!=0){
+			a = Math.floor((Math.random()* (size-2))+1);
+			b = Math.floor((Math.random()* (size-2))+1);
+		}
+		tab[a][b] = -1;
+		
+		//document.getElementById("d_"+i+"_"+j)
+	}
+	
+	function show(){
+		for(var i=0;i<size;i++){
+			for(var j=0;j<size;j++){
+				document.getElementById("d_"+i+"_"+j).innerHTML=tab[i][j];
+			}
+		}
+	}
+	
+	function draw(){
+		var div;
+		for(var i=0;i<size;i++){
+			for(var j=0;j<size;j++){
+				if(tab[i][j]==-2){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="#222222";					
+				}else if(tab[i][j]==-1){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="red";
+				}else if(tab[i][j]==0){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="#EEEEEE";
+				}else if(tab[i][j]>0){
+					
+					div=document.getElementById("d_"+i+"_"+j);
+					div.style.backgroundColor="green";
+					
+				}
+			}
+		}
+	}
+	
+	/*function showAndDraw(){
+		for(var i=0;i<size;i++){
+			for(var j=0;j<size;j++){
+				document.getElementById("d_"+i+"_"+j).innerHTML=tab[i][j];
+				if(tab[i][j]==-2){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="pink";
+				}else if(tab[i][j]==-1){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="red";
+				}else if(tab[i][j]==0){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="#DDDDDD";
+				}else if(tab[i][j]>0){
+					document.getElementById("d_"+i+"_"+j).style.backgroundColor="black";
+				}
+			}
+		}
+	}*/
+	
+	
+	function zwieksz(){
+		for(var i=1;i<size-1;i++){
+			for(var j=1;j<size-1;j++){
+				if(tab[i][j]>0){
+					tab[i][j]++;
+				}
+			}
+		}
+	}
+	
+	function utnij(){
+		for(var i=1;i<size-1;i++){
+			for(var j=1;j<size-1;j++){
+				if(tab[i][j]>length){
+					tab[i][j]=0;
+				}
+			}
+		}
+	}
+	
+	
+	
+	function goForth(dir){
+		if(dir=='up'){
+			zwieksz();
+			if(tab[poczy-1][poczx]==-2 || tab[poczy-1][poczx]>0)
+			{
+				alert("game over");
+				clearInterval(snejk);		
+				return
+			}else if(tab[poczy-1][poczx]==-1){
+				tab[poczy-1][poczx]=1;
+				poczy--;
+				length++;
+				loss();
+			}else {
+				tab[poczy-1][poczx]++;
+				poczy--;
+			}
+			utnij();
+		}else if(dir=='left'){
+			zwieksz();
+			if(tab[poczy][poczx-1]==-2 || tab[poczy][poczx-1]>0)
+			{
+				alert("game over")
+				clearInterval(snejk);
+				return;
+			}else if(tab[poczy][poczx-1]==-1){
+				tab[poczy][poczx-1]=1;
+				poczx--;
+				length++;
+				loss();
+			}else{
+				tab[poczy][poczx-1]++;
+				poczx--;
+			}
+			utnij();
+		}else if(dir=='down'){
+			zwieksz();
+			if(tab[poczy+1][poczx]==-2 || tab[poczy+1][poczx]>0)
+			{
+				alert("game over")
+				clearInterval(snejk);
+				return;
+			}else if(tab[poczy+1][poczx]==-1){
+				tab[poczy+1][poczx]=1;
+				poczy++;
+				length++;
+				loss();
+			}else{
+				tab[poczy+1][poczx]++;
+				poczy++;
+			}
+			utnij();
+		}else if(dir=='right'){
+			zwieksz();
+			if(tab[poczy][poczx+1]==-2 || tab[poczy][poczx+1]>0)
+			{
+				alert("game over")
+				clearInterval(snejk);
+				return;
+			}else if(tab[poczy][poczx+1]==-1){
+				tab[poczy][poczx+1]=1;
+				poczx++;
+				length++;
+				loss();
+			} else{
+				tab[poczy][poczx+1]++;
+				poczx++;
+			}
+			utnij();
+		}
+		draw();
+	}
+	
+	var snejk;
+	
+	//	klawisz kierunku:
+	//		a) zwiększam w tablicy wszystkie wartości >0 o 1
+	//		b) wstawiam w odpowiednim miejsu tablicy wartość "1"
+	//		c) zeruję w tablicy wszystkie wartości większe od długości węża
+
+	
+	function setWay(direct)
+	{
+		
+		var oppositeDirection = {
+			left : 'right',
+			right: 'left',
+			up: 'down',
+			down:'up'
+		}
+
+		if(direct != oppositeDirection[direction]){
+			direction = direct;
+			//console.log(direction);
+		}
+	}
+	
+	function key(e)
+	{
+		if(!start){loss();snejk=setInterval(function(){goForth(direction);},speed);start=true;}
+		//w - 87 || 38
+		//a - 65 ||	37
+		//s - 83 ||	40
+		//d - 68 ||	39
+		if(typeof(e)=='undefined')
+			return;
+		if(e.which) code=e.which; else code=e.keyCode;
+		//e.which ?  code=e.which : code=e.keyCode;
+				
+		var newDirection = keys[code];
+		if(newDirection)
+		{
+			setWay(newDirection);
+		}
+	}
+
+//inf101@
+</script>
+</head>
+<body onload="onLoad();" onkeydown="key(event);">
+<button onclick="location.reload();">Restart</button>	
+</body>
+</html>

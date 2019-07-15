@@ -1,0 +1,164 @@
+html, 
+body
+	{
+		background-color:#0066CC;
+		margin:0px auto;
+		padding:0px;
+		outline:0px;
+		width:960px;
+		font-family:arial;
+		font-size:18px;
+		color:black;
+	}
+a{
+	text-decoration:none;
+	color:#0066CC;
+}
+ul.menu
+{
+list-style-type:none;
+margin:0px;
+padding:0px;
+outline:0px;
+}
+a.topmenu:link,a.topmenu:visited
+{
+box-shadow: 0px 0px 1px #999999;
+text-shadow: 0px 0px 1px #FFFFFF;
+font-family:tahoma;
+letter-spacing:0px;
+font-weight:bold;
+font-size:23px;
+margin:15px;
+display:block;
+color:#FFFFFF;
+background-color:#BDBDBD;
+width:200px;
+text-align:center;
+border-radius:5px;
+padding:5px;
+text-decoration:none;
+}
+
+a.topmenu:hover
+{
+background-color:#007FFF;
+box-shadow: 0px 0px 15px 1px #0066CC;
+}
+
+a.topmenu.active
+{
+background-color:#007FFF;
+box-shadow: 0px 0px 15px 1px #0066CC;
+}
+
+a.botmenu:link,a.botmenu:visited
+{
+float:left;
+padding: 0px 0px;
+display:block;
+color:#FFFFFF;
+background-color:#333333;
+width:33%;
+text-align:center;
+text-decoration:none;
+}
+a.botmenu:hover
+{
+background-color:#0066CC;
+}
+
+
+header
+	{	
+		color:white;
+		text-shadow: 0px 0px 2px #FFFFFF;
+		font-size:60px;
+		font-weight:bold;
+		text-align:center;
+		background-color:#333333;
+		float:left;
+		margin:0px;
+		outline:0px;
+		padding:15px 0px;
+		width: 960px;
+		height:auto;
+		/*box-shadow:0px 0px 30px #FFFFFF;*/
+		overflow:visible;
+	}
+	
+footer{
+		text-align:center;
+		margin-bottom:20px;
+		font-family:calibri;
+	}
+	
+#menu
+	{
+		margin:20px;
+		width: 240px;
+		float:left;
+	}
+	
+#content
+	{
+		overflow:hidden;
+		width:960px;
+		background-color:#FFFFFF;
+		margin: auto auto;
+		box-shadow: 0px -80px 2000px 10px #FFFFFF;
+		min-height: auto;
+		border-bottom-right-radius:10px;
+		border-bottom-left-radius:10px;
+	}
+	
+#content_mainpage
+	{
+		color:#FFFFFF;
+		margin:20px 20px 20px 0px;
+		width:600px;
+		padding:0px 30px;
+		overflow:hidden;
+		float:left;
+		background-color:#BDBDBD;
+		box-shadow: 0px 0px 2px #999999;
+		border-radius:7px;
+		text-overflow:clip;
+		text-align:justify;
+		padding-bottom:30px;
+	}
+
+#menu_bot
+	{
+		width:auto;
+		height:20px;
+		position:fixed;
+		left:0px;
+		right:0px;
+		bottom:0px;
+		background-color:#333333;
+		box-shadow: 0px 0px 5px #000000;
+		padding:1px 25%
+	}
+
+#obrazki{
+	text-align:center;
+}
+#obrazki img{
+	height:128px;
+}
+
+ul{
+	list-style-type:square;
+}
+
+h3{
+	text-align:left;
+	font-size:25px;
+	color:#333333;
+	text-decoration:underline;
+}
+
+h4{
+	font-size:25px;
+}

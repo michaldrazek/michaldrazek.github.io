@@ -1,0 +1,775 @@
+﻿<html>
+<head>
+<style>
+	@font-face {
+    font-family: pixel;
+    src: url(small_pixel-7.ttf);
+	}
+	
+	body{
+		font-family: Helvetica;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		cursor:default;
+	}
+
+	.tejbel:hover{
+		cursor:pointer;
+	}
+	
+	#scoreboard:hover{
+		cursor:pointer;
+	}
+	
+	#pomoz:hover{
+		cursor:pointer;
+	}
+	
+	#btn{
+		position:fixed;
+		right:50px;
+		top:20px;
+	}
+}
+</style>
+<script>
+	//const size = 9;
+	var rowsy;
+	var colsy;
+	var miny;
+	var pozostale;
+	var tab = new Array();
+	var firstClick = true;
+	var czas=0;
+	var width=15;
+	var timer;
+	var ls;
+	var wyniki;
+	
+	
+	function start(){
+		rowsy = document.getElementById("wys").value
+		colsy = document.getElementById("szer").value
+		miny = document.getElementById("minsy").value
+		pozostale = miny;
+		make()
+		for(var i = 0;i<miny;i++){
+			wylosuj();
+		}
+		pozliczaj();
+		show();
+		document.getElementById("minesLeft").innerHTML="Pozostałe miny: "+pozostale
+		document.getElementById("time").innerHTML="Czas: "+czas;
+	}
+	
+    function onLoad(){
+		var beg = [];
+		var inter = [];
+		var exp = [];
+		ls = window.localStorage;
+		if (ls != undefined && ls != null && ls.getItem("wyniki") != null) {
+			wyniki = JSON.parse(ls.getItem("wyniki"));			
+		} else {
+			for(var i=0;i<10;i++){
+				beg.push({
+					name: 'brak',
+					time: 'brak'				
+				});
+				inter.push({
+					name: 'brak',
+					time: 'brak'				
+				});
+				exp.push({
+					name: 'brak',
+					time: 'brak'				
+				});
+			}
+			
+			wyniki = {
+				beg: beg,
+				inter: inter,
+				exp: exp
+			}	
+			
+		}
+		highscoresUpdate();
+		scoreboard();
+	}
+	
+	function highscoresUpdate(){
+		document.getElementById("beg_name").innerHTML=wyniki.beg[0].name
+		document.getElementById("beg_time").innerHTML=wyniki.beg[0].time
+		document.getElementById("inter_name").innerHTML=wyniki.inter[0].name
+		document.getElementById("inter_time").innerHTML=wyniki.inter[0].time
+		document.getElementById("exp_name").innerHTML=wyniki.exp[0].name
+		document.getElementById("exp_time").innerHTML=wyniki.exp[0].time
+		updateScoreboard()
+	}
+
+	
+	Array.prototype.insert = function (index, item) {
+		this.splice(index, 0, item);
+	};
+	
+	function addToHighscoresBeg(obj){
+		for(var i=0;i<10;i++){
+			if((wyniki.beg[i].time=="brak")||(wyniki.beg[i].time>obj.time)){	
+				wyniki.beg.insert(i,obj);
+				wyniki.beg.splice(-1,1);
+				break;
+			}
+		}
+		highscoresUpdate();
+	}
+	
+	function addToHighscoresInter(obj){
+		for(var i=0;i<10;i++){
+			if((wyniki.inter[i].time=="brak")||(wyniki.inter[i].time>obj.time)){	
+				wyniki.inter.insert(i,obj);
+				wyniki.inter.splice(-1,1);
+				break;
+			}
+		}
+		highscoresUpdate();
+	}
+	
+	function addToHighscoresExp(obj){
+		for(var i=0;i<10;i++){
+			if((wyniki.exp[i].time=="brak")||(wyniki.exp[i].time>obj.time)){	
+				wyniki.exp.insert(i,obj);
+				wyniki.exp.splice(-1,1);
+				break;
+			}
+		}
+		highscoresUpdate();
+	}
+	
+	function checkTime(mode){
+		for(var i=0;i<10;i++){
+			if(mode==0){
+				if((wyniki.beg[i].time=="brak")||(wyniki.beg[i].time>czas)){
+					return true;
+					break;
+				}
+			} else if(mode==1){
+				if((wyniki.inter[i].time=="brak")||(wyniki.inter[i].time>czas)){
+					return true;
+					break;
+				}
+			} else if(mode==2){
+				if((wyniki.exp[i].time=="brak")||(wyniki.exp[i].time>czas)){				
+					return true;
+					break;
+				}
+			}
+		}
+		return false;
+	}
+	
+	function make(){
+		for(var i=0;i<rowsy;i++){
+			tab[i] = new Array();
+			for(var j=0;j<colsy;j++){
+				tab[i][j]=0;
+			}
+		}
+		var ww = rowsy;
+		var wk = colsy;
+		var main = document.createElement("div");
+		document.body.appendChild(main);
+		main.style.width = width + "px";
+		main.style.height = width + "px";
+		main.style.position = "absolute";
+		main.id="poleMinowe"
+		main.style.fontFamily="pixel"
+		for (var i = 0; i < ww; i++) {
+			for (var j = 0; j < wk; j++) {
+				var small = document.createElement("div");
+				main.appendChild(small);
+				if (i<10 && j<10){
+					small.id="d_0"+i+"_0"+j;
+				}else if(i<10 && j>9){
+					small.id="d_0"+i+"_"+j;
+				}else if(i>9 && j<10){
+					small.id="d_"+i+"_0"+j;
+				}else{				
+					small.id="d_"+i+"_"+j;
+				}
+				small.style.width = width + "px";
+				small.style.height = width + "px";
+				small.style.position = "absolute";
+				small.style.left = j * width + "px";
+				small.style.top = 20 + i * width + "px";
+				small.style.lineHeight = (width) + "px";
+				small.style.textAlign = "center";
+				small.style.fontSize="20px";
+				small.style.border = "solid";
+				small.style.borderWidth = "1px";
+				small.style.borderColor = "#000000";
+				small.style.background = "#AAAAAA";
+				small.style.cursor="default"
+				small.className = ""
+				small.addEventListener("mousedown", onDown, false);
+				small.addEventListener('contextmenu', onRight, false);
+			}
+		} 
+		
+		/*for(var i=0;i<ww;i++){
+			for(var j=0;j<wk;j++){
+				tab[i][j];
+			}
+		}*/
+    }
+	
+	function wylosuj(){
+		var a = Math.floor((Math.random()* rowsy));
+		var b = Math.floor((Math.random()* colsy));
+		while(tab[a][b]==-1){
+			a = Math.floor((Math.random()* rowsy));
+			b = Math.floor((Math.random()* colsy));
+		}
+		tab[a][b] = -1;
+		//console.log("try")
+		//document.getElementById("d_"+i+"_"+j)
+	}
+	
+	
+	function show(){		
+		var temp;
+		for(var i=0;i<tab.length;i++){
+			for(var j=0;j<tab[0].length;j++){
+				if (i<10 && j<10){
+					temp=document.getElementById("d_0"+i+"_0"+j)
+				}else if(i<10 && j>9){
+					temp=document.getElementById("d_0"+i+"_"+j)
+				}else if(i>9 && j<10){
+					temp=document.getElementById("d_"+i+"_0"+j)
+				}else{				
+					temp=document.getElementById("d_"+i+"_"+j)
+				}
+				if(temp.className=="revealed")
+				{
+					if(tab[i][j]>0){
+						if(tab[i][j]==0){
+							return;
+						}
+						temp.innerHTML=tab[i][j];
+					}
+					if(tab[i][j]==1){
+						temp.style.color="#0000FF"
+					}else if(tab[i][j]==2){
+						temp.style.color="#008000"
+					}else if(tab[i][j]==3){
+						temp.style.color="#FF0000"
+					}else if(tab[i][j]==4){
+						temp.style.color="#000080"
+					}else if(tab[i][j]==5){
+						temp.style.color="#800000"
+					}else if(tab[i][j]==6){
+						temp.style.color="#008080"
+					}else if(tab[i][j]==7){
+						temp.style.color="#000000"
+					}else if(tab[i][j]==8){
+						temp.style.color="#808080"
+					}else{
+						temp.style.color="#FFFFFF"
+					}
+				}
+			}
+		}		
+	}
+	
+	function odkryjMiny(){
+		var temp;
+		for(var i=0;i<tab.length;i++){
+			for(var j=0;j<tab[0].length;j++){
+				if (i<10 && j<10){
+					temp=document.getElementById("d_0"+i+"_0"+j)
+				}else if(i<10 && j>9){
+					temp=document.getElementById("d_0"+i+"_"+j)
+				}else if(i>9 && j<10){
+					temp=document.getElementById("d_"+i+"_0"+j)
+				}else{				
+					temp=document.getElementById("d_"+i+"_"+j)
+				}
+				if(tab[i][j]==-1 && temp.className!="defused")
+				{
+				//dodac tu odkrywanie miny na nieodslonietym polu
+					temp.style.backgroundColor="red"
+					temp.innerHTML="*";
+				}
+				if(tab[i][j]>=0 && temp.className=="defused")
+				{
+					temp.style.backgroundColor="lightblue"
+					temp.innerHTML="*";
+				}
+			}
+		}		
+	}
+	
+	function zlicz(w,k){
+		var ilosc = 0;
+		if(tab[w][k]==-1){
+			return -1;
+		}else if(w-1<0 && k-1<0){
+			//lewy gorny naroznik
+			if(tab[w+1][k]==-1)ilosc++;
+			if(tab[w+1][k+1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+		}else if(w-1<0 && k+1>tab[0].length-1){
+			//prawy gorny naroznik
+			if(tab[w][k-1]==-1)ilosc++;
+			if(tab[w+1][k-1]==-1)ilosc++;
+			if(tab[w+1][k]==-1)ilosc++;
+		}else if(w+1>tab.length-1 && k-1<0){
+			//lewy dolny naroznik
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w-1][k+1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+		}else if(w+1>tab.length-1 && k+1>tab[0].length-1){
+			//prawy dolny naroznik
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w-1][k-1]==-1)ilosc++;
+			if(tab[w][k-1]==-1)ilosc++;
+		}else if(w-1<0){
+			//gorne divy (bez w-1)
+			if(tab[w][k-1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+			if(tab[w+1][k-1]==-1)ilosc++;
+			if(tab[w+1][k]==-1)ilosc++;
+			if(tab[w+1][k+1]==-1)ilosc++;
+		}else if(w+1>tab.length-1){
+			//dolne divy (bez w+1)
+			if(tab[w-1][k-1]==-1)ilosc++;
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w-1][k+1]==-1)ilosc++;
+			if(tab[w][k-1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+		}else if(k-1<0){
+			//lewe divy (bez k-1)
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w-1][k+1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+			if(tab[w+1][k]==-1)ilosc++;
+			if(tab[w+1][k+1]==-1)ilosc++;
+		}else if(k+1>tab[0].length-1){
+			//prawe divy (bez k+1)
+			if(tab[w-1][k-1]==-1)ilosc++;
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w][k-1]==-1)ilosc++;
+			if(tab[w+1][k-1]==-1)ilosc++;
+			if(tab[w+1][k]==-1)ilosc++;
+		}else{	
+			//srodkowe divy
+			if(tab[w-1][k-1]==-1)ilosc++;
+			if(tab[w-1][k]==-1)ilosc++;
+			if(tab[w-1][k+1]==-1)ilosc++;
+			if(tab[w][k-1]==-1)ilosc++;
+			if(tab[w][k+1]==-1)ilosc++;
+			if(tab[w+1][k-1]==-1)ilosc++;
+			if(tab[w+1][k]==-1)ilosc++;
+			if(tab[w+1][k+1]==-1)ilosc++;
+		}	
+		//console.log(w+", "+k)
+		//console.log(ilosc);
+		return ilosc;
+	}
+	
+	function pozliczaj(){
+		var temp;
+		for(var i=0;i<tab.length;i++){
+			for(var j=0;j<tab[0].length;j++){
+			tab[i][j]=zlicz(i,j);
+			}
+		}
+	}
+	
+	
+	
+	function checkWin(){
+		if(document.getElementsByClassName("revealed").length==rowsy*colsy-miny)
+			{
+				/*var temp;
+				var counter=0;
+				for(var i=0;i<tab.length;i++){
+					for(var j=0;j<tab[0].length;j++){
+						if (i<10 && j<10){
+							temp=document.getElementById("d_0"+i+"_0"+j)
+						}else if(i<10 && j>9){
+							temp=document.getElementById("d_0"+i+"_"+j)
+						}else if(i>9 && j<10){
+							temp=document.getElementById("d_"+i+"_0"+j)
+						}else{				
+							temp=document.getElementById("d_"+i+"_"+j)
+						}
+						
+						
+						if(temp.className=="revealed")
+						{
+							counter++;
+						}
+						
+						/*if(tab[i][j]==-1 && (temp.className=="defused" || temp.className=="mejbi"))
+						{
+							counter++;
+						}
+					}
+				}
+				if(counter==pozostale){
+					*/
+					var noldy = document.getElementById("poleMinowe").childNodes;
+					for(var i=0;i<noldy.length;i++){
+						noldy[i].removeEventListener("mousedown",onDown);
+						noldy[i].removeEventListener("contextmenu",onRight);
+					}
+					clearInterval(timer);
+					alert("Wygrałeś!");
+					var tryb=-1 
+					if(rowsy==9 && colsy == 9 && miny == 10) tryb=0;else if
+					(rowsy==16 && colsy == 16 && miny == 40) tryb=1;else if
+					(rowsy==16 && colsy == 30 && miny == 99) tryb=2;	
+					
+					if(tryb==0 && checkTime(0)){
+						var imie = prompt("Podaj imię:")
+						var potato = {
+							name:imie,
+							time:czas
+						}
+						addToHighscoresBeg(potato);
+						ls.setItem("wyniki",JSON.stringify(wyniki));
+					}else if(tryb==1 && checkTime(1)){
+						var imie = prompt("Podaj imię:")
+						var potato = {
+							name:imie,
+							time:czas
+						}
+						addToHighscoresInter(potato);
+						ls.setItem("wyniki",JSON.stringify(wyniki));
+					}else if(tryb==2 && checkTime(2)){
+						var imie = prompt("Podaj imię:")
+						var potato = {
+							name:imie,
+							time:czas
+						}
+						addToHighscoresExp(potato);
+						ls.setItem("wyniki",JSON.stringify(wyniki));
+					}else{
+						return;
+					} 
+			
+				//}
+			}
+	}
+	
+	function reveal (r,c){
+		//r=parseInt(r)
+		//c=parseInt(c)
+		revealNext(r-1,c-1)
+		revealNext(r-1,c)
+		revealNext(r-1,c+1)
+		revealNext(r,c+1)
+		revealNext(r+1,c+1)
+		revealNext(r+1,c)
+		revealNext(r+1,c-1)
+		revealNext(r,c-1)
+	}
+	
+	function revealNext(wie,kol){
+			var temp
+			//wie=parseInt(wie)
+			//kol=parseInt(kol)
+            if (wie<0 || kol<0 || kol>tab[0].length-1 || wie>tab.length-1) return;
+			if (wie<10 && kol<10){
+					temp=document.getElementById("d_0"+wie+"_0"+kol)
+				}else if(wie<10 && kol>9){
+					temp=document.getElementById("d_0"+wie+"_"+kol)
+				}else if(wie>9 && kol<10){
+					temp=document.getElementById("d_"+wie+"_0"+kol)
+				}else{				
+					temp=document.getElementById("d_"+wie+"_"+kol)
+				}
+
+            if (temp.className == "revealed" || temp.className == "defused") return;
+            if (tab[wie][kol]==0)
+            {
+                temp.className = "revealed"
+				temp.style.backgroundColor="#E5E5E5"
+                reveal(wie, kol);
+            }
+            else
+            { 
+                temp.className = "revealed"
+				temp.style.backgroundColor="#E5E5E5"
+            }
+			//show();
+			
+	}
+	
+	function onRight(e) {
+		var klik = e.target;
+		e.preventDefault();
+		if(pozostale-1<0){
+			if(klik.className==""){
+				return;
+			}
+		}
+		if(klik.className=="revealed")return;
+		if(klik.className==""){
+			klik.style.backgroundColor = "#00FF00";
+			klik.className = "defused";
+			klik.innerHTML="*";
+			pozostale--;
+		}else if(klik.className=="defused"){
+			klik.innerHTML="?";
+			klik.className="mejbi"
+		}else{
+			klik.style.backgroundColor = "#AAAAAA";
+			klik.className = ""
+			klik.innerHTML=""
+			pozostale++;
+		}
+		document.getElementById("minesLeft").innerHTML="Pozostałe miny: "+pozostale
+		//checkWin();
+		return false;
+	}
+		
+	function zeruj(){
+		for(var i=0;i<rowsy;i++){
+			for(var j=0;j<colsy;j++){
+				tab[i][j]=0;			
+			}
+		}
+	}
+	
+	function onDown(e) {
+		var klikniety = e.target;
+		
+		if(e.button == 2 || klikniety.className=="defused")return;
+		
+		var ajdi = klikniety.id;
+		//console.log(ajdi);
+		
+		var row
+		var column
+		
+		if(ajdi[2]=="0"){
+			row = ajdi[3];
+		}else{
+			row = ajdi[2]+ajdi[3];
+		}
+		
+		if(ajdi[5]=="0"){
+			column = ajdi[6];
+		}else{
+			column = ajdi[5]+ajdi[6];
+		}
+		if(firstClick){
+			while(tab[row][column]!=0){
+				zeruj();
+				for(var i = 0;i<miny;i++){
+					wylosuj();
+					//console.log(i)
+				}
+				pozliczaj();
+				show();
+				//console.log("chng")
+			}
+			timer = setInterval(function(){
+				czas++;
+				document.getElementById("time").innerHTML="Czas: "+czas;
+			},1000);
+			firstClick=false;
+		}
+		
+		if(tab[parseInt(row)][parseInt(column)]==-1)
+		{
+			klikniety.style.backgroundColor="red"
+			var noldy = document.getElementById("poleMinowe").childNodes;
+			for(var i=0;i<noldy.length;i++){
+				noldy[i].removeEventListener("mousedown",onDown);
+				noldy[i].removeEventListener("contextmenu",onRight);
+			}
+			odkryjMiny();
+			clearInterval(timer);
+			alert("Game Over");
+		}else if(tab[parseInt(row)][parseInt(column)]>=0 && klikniety.className=="mejbi"){
+			klikniety.style.backgroundColor="#E5E5E5"
+			klikniety.className="revealed"
+			pozostale++;
+			klikniety.innerHTML=tab[parseInt(row)][parseInt(column)]
+			document.getElementById("minesLeft").innerHTML="Pozostałe miny: "+pozostale
+		}else if(tab[parseInt(row)][parseInt(column)]==0){
+			klikniety.style.backgroundColor="#E5E5E5"
+			klikniety.className="revealed"
+
+			reveal(parseInt(row),parseInt(column));
+		}else{
+			klikniety.style.backgroundColor="#E5E5E5"
+			klikniety.className="revealed"
+		}
+		//zlicz(parseInt(row),parseInt(column));
+		//console.log(tab[parseInt(row)][parseInt(column)])
+		//
+		show();
+		checkWin();
+	}
+	
+	function scoreboard(){
+		var deska = document.getElementById("scoreboard");
+		deska.style.width=window.innerWidth-200;
+		deska.style.height=420;
+		deska.style.position="fixed";
+		deska.style.border="dashed black 1px"
+		deska.style.left=100;
+		deska.style.top="200px";
+		deska.style.backgroundColor="lightblue";
+		deska.style.zIndex="1"
+	}
+	
+	function updateScoreboard(){
+		var pocz=document.getElementById("beginner")
+		var sred=document.getElementById("intermediate")
+		var eks=document.getElementById("expert")
+		
+		var temp1="<tr><th colspan='3' style='font-size:24px;'>Beginner</th></tr><tr><th>Poz.:</th><th>Imię:</th><th>Czas:</th>"
+		var temp2="<tr><th colspan='3' style='font-size:24px;'>Intermediate</th></tr><tr><th>Poz.:</th><th>Imię:</th><th>Czas:</th>"
+		var temp3="<tr><th colspan='3' style='font-size:24px;'>Expert</th></tr><tr><th>Poz.:</th><th>Imię:</th><th>Czas:</th>"
+		
+		for(var i=0;i<10;i++){
+			temp1 = temp1.concat("<tr style='text-align:center;'><td>"+(i+1)+"</td><td>"+wyniki.beg[i].name+"</td><td>"+wyniki.beg[i].time+"</td></tr>");
+			temp2 = temp2.concat("<tr style='text-align:center;'><td>"+(i+1)+"</td><td>"+wyniki.inter[i].name+"</td><td>"+wyniki.inter[i].time+"</td></tr>");
+			temp3 = temp3.concat("<tr style='text-align:center;'><td>"+(i+1)+"</td><td>"+wyniki.exp[i].name+"</td><td>"+wyniki.exp[i].time+"</td></tr>");
+		}
+		pocz.innerHTML=temp1;
+		sred.innerHTML=temp2;
+		eks.innerHTML=temp3;
+		
+		var szer="4%"
+		pocz.style.marginLeft=szer;
+		sred.style.marginLeft=szer;
+		eks.style.marginLeft=szer;
+	}
+	
+	function scoreboardShowHide(){
+		var deska = document.getElementById("scoreboard");
+		if(deska.style.display=="none"){
+			deska.style.display="block";
+		} else{
+			deska.style.display="none";
+		}
+	}
+	
+	function wysunDeske(){
+		scoreboard();
+		scoreboardShowHide();
+	}
+	
+	function pomoc(){
+		pomocDiv();
+		wysunPomoc();
+	}
+	
+	function wysunPomoc(){
+		var deska = document.getElementById("pomoz");
+		if(deska.style.display=="none"){
+			deska.style.display="block";
+		} else{
+			deska.style.display="none";
+		}
+	}
+	
+	function pomocDiv(){
+		var deska = document.getElementById("pomoz");
+		deska.style.width=300;
+		deska.style.height=100;
+		deska.style.position="fixed";
+		deska.style.border="dashed black 1px"
+		deska.style.left=window.innerWidth/2-150;
+		deska.style.top="200px";
+		deska.style.backgroundColor="lightblue";
+		deska.style.zIndex="1"
+	}
+	
+	function check(){
+		//debilo-odporność
+		if(isNaN(document.getElementById("wys").value) || isNaN(document.getElementById("szer").value) || isNaN(document.getElementById("minsy").value)){
+			alert("Podaj liczbę, a nie tekst");
+			return true;
+		}
+		if((document.getElementById("wys").value>99) || (document.getElementById("szer").value>99)||(document.getElementById("wys").value<3) || (document.getElementById("szer").value<3)){
+			alert("Podaj poprawną liczbe z zakresu 3-99")
+			return true;
+		}
+		if((document.getElementById("minsy").value<1)||(document.getElementById("minsy").value>9800)||(document.getElementById("minsy").value>=document.getElementById("wys").value * document.getElementById("szer").value)){
+			alert("Podaj poprawną liczbę z zakresu 1-9800, mniejszą niz pole planszy (radzę jednak nie przesadzać)")
+			return true;
+		}
+	}
+/*to do
+-zlicznie min w pobliskich polach (wymyslic algorytm rekurencyjny (albo nadupczyc ifów - done)) - done
+-zmieniac kolor odslonietego pola (zaczatek wylaczenia cyfr) - done
+-zaznaczanie prawym klawiszem: zmiana koloru i pewnie dodanie klasy - done
+-formy z iloscia min i rozmiarem planszy - done
+-wyglad - done
+-zabezpieczyc przed poczatkowym odslonieciem miny  - done
+-odkrywanie pustych pól (algorytm rekurencyjny) - done
+-pozwolic na wygrana - done
+-licznik min i czasu - done
+-top 10 wyników dla kazdego trybu zapisywane w pamieci (pewnie localstorage)
+-zabezpieczyc przed debilami (np 100 min na planszy 9x9) - done
+
+//inf101@
+	Projekt - "Saper" (6 pkt)
+	(1p) wpisujemy width, height, ilość bomb, klikamy przycisk "ok" i generuje się plansza saper'a w działaniu jak w systemie XP (tablica + rozlosowane w niej bomby) - done
+	(1.5p) pokazywanie ilości sąsiadujących bomb - done
+	(1p) trafenie w bombę - koniec gry i pokazanie rozmieszczenia pozostałych (zagraj w sapera!) - done
+	(1p) RMB - rotacyjna zmiana grafiki (oznaczenie bomby / znak ? / brak) - done
+	(1p) rekordy "top 10" wybranego trybu (w cookie lub storage) + ich prezentacja. - done
+	(0.5p) czas, liczenie bomb (włącznie z "szacunkowym" znakiem ?), zakończenie gry - done
+
+	zachęcam do rekordów typu "top 10" dla wszystkich dotychczas rozegranych trybów (nie jest to wymagany element gry). - done
+	zachęcam do rekurencyjnego autoodkrywania sąsiednich pustych pól (zer, nie jest to wymagany element gry) - done
+*/
+</script>
+</head>
+<body onload="onLoad();">
+	<button id="btn" onclick="pomoc();">POMOC</button>
+	<label>Szerokość:</label>
+	<input type="number" id="szer" value="9" min="3" max ="99" /><br>
+	<label>Wysokość:</label>
+	<input type="number" id="wys" value="9" min="3" max ="99"/><br>
+	<label>Ilość min:</label>
+	<input type="number" id="minsy" value="10" min="3" max ="9800"/><br><br>
+	<input type="submit" value="OK" onclick="if(check()){return;};start();this.style.visibility='hidden';">
+	<button id="btns" onclick="location.reload();">Restart</button><br><br>
+	<div id="minesLeft">Pozostałe miny: </div>
+	<div id="time">Czas:</div>
+	<div style="position:absolute;left:200px;top:5px;">
+		<h3 style="text-align:center">  Poziom Trudności:</h3>
+		<table style="border-spacing:5px;">
+			<tr><th>Tryb:</th><th>Szerokość:</th><th>Wysokość:</th><th>Ilość min:</th><th onclick="wysunDeske()">Rekord:</th><th onclick="wysunDeske()">Czas:</th></tr>
+			<tr onclick="document.getElementById('wys').value=9;document.getElementById('szer').value=9;document.getElementById('minsy').value=10;" class="tejbel"><td>Beginner:</td><td style="text-align:center;">9</td><td style="text-align:center;">9</td><td style="text-align:center;">10</td><td id="beg_name" onclick="wysunDeske()"></td><td id="beg_time" onclick="wysunDeske()"></td></tr>
+			<tr onclick="document.getElementById('wys').value=16;document.getElementById('szer').value=16;document.getElementById('minsy').value=40;" class="tejbel"><td>Intermediate:</td><td style="text-align:center;">16</td><td style="text-align:center;">16</td><td style="text-align:center;">40</td><td id="inter_name" onclick="wysunDeske()"></td><td id="inter_time" onclick="wysunDeske()"></td></tr>
+			<tr onclick="document.getElementById('wys').value=16;document.getElementById('szer').value=30;document.getElementById('minsy').value=99;" class="tejbel"><td>Expert:</td><td style="text-align:center;">30</td><td style="text-align:center;">16</td><td style="text-align:center;">99</td><td id="exp_name" onclick="wysunDeske()"></td><td id="exp_time" onclick="wysunDeske()"></td></tr>	
+		</table>
+	</div>
+	<div id="pomoz" onclick="pomoc();" style="display:none;text-align:justify;padding:15px 20px;">
+		To okienko pomocy.<br>
+		Aby ustawić liczbę min, trzeba kliknąć na nazwe trybu.<br>
+		Aby zobaczyc tabele wyników, trzeba kliknąć na jedno z pól "Rekord".
+	</div>
+	<div id="scoreboard" onclick="wysunDeske()" style="display:none;text-align:center;">
+				<h1>Najlepsze Wyniki</h1>
+			<table style="float:left;overflow:hidden;border-spacing:5px;width:27%;" id="beginner">	
+			</table>
+			<table style="float:left;overflow:hidden;border-spacing:5px;width:27%;" id="intermediate">
+			</table>
+			<table style="float:left;overflow:hidden;border-spacing:5px;width:27%;" id="expert">
+			</table>
+	</div>
+</body>
+</html>
